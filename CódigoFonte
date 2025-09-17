@@ -1,0 +1,67 @@
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+
+// Pinos
+const int pot1 = A0;
+const int pot2 = A1;
+const int ledVerm = 4;
+const int ledVerde = 5;
+const int rele = 8;
+
+// LCD no endereço I2C padrão (0x27 ou 0x3F)
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void setup() {
+  pinMode(ledVerm, OUTPUT);
+  pinMode(ledVerde, OUTPUT);
+  pinMode(rele, OUTPUT);
+
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+
+  // Estado inicial = Cofre trancado
+  lcd.setCursor(0,0);
+  lcd.print("Cofre trancado.");
+  digitalWrite(ledVerm, HIGH);   // vermelho aceso
+  digitalWrite(ledVerde, LOW);   // verde apagado
+  digitalWrite(rele, HIGH);      // tranca fechada
+
+  // Inicia comunicação serial
+  Serial.begin(9600);
+}
+
+void loop() {
+
+  int valor1 = analogRead(pot1);
+  int valor2 = analogRead(pot2);
+
+  // Imprime valores no Monitor Serial
+  Serial.print("Pot1: ");
+  Serial.print(valor1);
+  Serial.print("  |  Pot2: ");
+  Serial.println(valor2);
+
+  if (valor1 >= 500 && valor1 <= 600 && valor2 >= 500 && valor2 <= 600) {
+    // Cofre aberto
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Acesso liberado.");
+
+    digitalWrite(ledVerm, LOW);   // vermelho apagado
+    digitalWrite(ledVerde, HIGH); // verde aceso
+    digitalWrite(rele, LOW);      // tranca aberta
+  } 
+  else {
+    // Cofre trancado
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Cofre trancado.");
+
+    digitalWrite(ledVerm, HIGH);  // vermelho aceso
+    digitalWrite(ledVerde, LOW);  // verde apagado
+    digitalWrite(rele, HIGH);     // tranca fechada
+  }
+
+  delay(500); // estabiliza leitura
+}
